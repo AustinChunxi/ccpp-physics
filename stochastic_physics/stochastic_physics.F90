@@ -24,7 +24,7 @@ contains
 !> \section arg_table_stochastic_physics_init Argument Table
 !! | local_name     | standard_name                                          | long_name                                                               | units    | rank |  type                 |   kind    | intent | optional |
 !! |----------------|--------------------------------------------------------|-------------------------------------------------------------------------|----------|------|-----------------------|-----------|--------|----------|
-!! | Model          | FV3-GFS_Control_type                                   | Fortran DDT containing FV3-GFS model control parameters                 | DDT      |    0 | GFS_control_type      |           | inout  | F        |
+!! | Model          | GFS_control_type_instance                              | Fortran DDT containing FV3-GFS model control parameters                 | DDT      |    0 | GFS_control_type      |           | inout  | F        |
 !! | nthreads       | omp_threads                                            | number of OpenMP threads available for physics schemes                  | count    |    0 | integer               |           | in     | F        |
 !! | errmsg         | ccpp_error_message                                     | error message for error handling in CCPP                                | none     |    0 | character             | len=*     | out    | F        |
 !! | errflg         | ccpp_error_flag                                        | error flag for error handling in CCPP                                   | flag     |    0 | integer               |           | out    | F        |
@@ -77,6 +77,10 @@ nodes=Model%ntasks
 gis_stochy%me=me
 gis_stochy%nodes=nodes
 call init_stochdata(Model%levs,Model%dtp,Model%input_nml_file,Model%fn_nml,Model%nlunit,iret)
+! check to see decomposition
+!if(Model%isppt_deep == .true.)then
+!do_sppt = .true.
+!endif
 ! check namelist entries for consistency
 if (Model%do_sppt.neqv.do_sppt) then
    write(errmsg,'(*(a))') 'Logic error in stochastic_physics_init: incompatible', &
@@ -218,8 +222,8 @@ end subroutine stochastic_physics_init
 !> \section arg_table_stochastic_physics_run Argument Table
 !! | local_name     | standard_name                                          | long_name                                                               | units    | rank |  type                 |   kind    | intent | optional |
 !! |----------------|--------------------------------------------------------|-------------------------------------------------------------------------|----------|------|-----------------------|-----------|--------|----------|
-!! | Model          | FV3-GFS_Control_type                                   | Fortran DDT containing FV3-GFS model control parameters                 | DDT      |    0 | GFS_control_type      |           | in     | F        |
-!! | Data           | FV3-GFS_Data_type_all_blocks                           | Fortran DDT containing FV3-GFS data                                     | DDT      |    1 | GFS_data_type         |           | inout  | F        |
+!! | Model          | GFS_control_type_instance                              | Fortran DDT containing FV3-GFS model control parameters                 | DDT      |    0 | GFS_control_type      |           | in     | F        |
+!! | Data           | GFS_data_type_instance_all_blocks                      | Fortran DDT containing FV3-GFS data                                     | DDT      |    1 | GFS_data_type         |           | inout  | F        |
 !! | nthreads       | omp_threads                                            | number of OpenMP threads available for physics schemes                  | count    |    0 | integer               |           | in     | F        |
 !! | errmsg         | ccpp_error_message                                     | error message for error handling in CCPP                                | none     |    0 | character             | len=*     | out    | F        |
 !! | errflg         | ccpp_error_flag                                        | error flag for error handling in CCPP                                   | flag     |    0 | integer               |           | out    | F        |
@@ -343,8 +347,8 @@ contains
 !> \section arg_table_stochastic_physics_sfc_init Argument Table
 !! | local_name     | standard_name                                          | long_name                                                               | units    | rank |  type                 |   kind    | intent | optional |
 !! |----------------|--------------------------------------------------------|-------------------------------------------------------------------------|----------|------|-----------------------|-----------|--------|----------|
-!! | Model          | FV3-GFS_Control_type                                   | Fortran DDT containing FV3-GFS model control parameters                 | DDT      |    0 | GFS_control_type      |           | in     | F        |
-!! | Data           | FV3-GFS_Data_type_all_blocks                           | Fortran DDT containing FV3-GFS data                                     | DDT      |    1 | GFS_data_type         |           | inout  | F        |
+!! | Model          | GFS_control_type_instance                              | Fortran DDT containing FV3-GFS model control parameters                 | DDT      |    0 | GFS_control_type      |           | in     | F        |
+!! | Data           | GFS_data_type_instance_all_blocks                      | Fortran DDT containing FV3-GFS data                                     | DDT      |    1 | GFS_data_type         |           | inout  | F        |
 !! | errmsg         | ccpp_error_message                                     | error message for error handling in CCPP                                | none     |    0 | character             | len=*     | out    | F        |
 !! | errflg         | ccpp_error_flag                                        | error flag for error handling in CCPP                                   | flag     |    0 | integer               |           | out    | F        |
 !!
@@ -354,7 +358,6 @@ use stochy_data_mod, only : rad2deg,INTTYP,wlon,rnlat,gis_stochy, rpattern_sfc,n
 use get_stochy_pattern_mod,only : get_random_pattern_sfc_fv3                                          ! mg, sfc-perts
 use stochy_resol_def , only : latg,lonf
 use stochy_namelist_def
-use spectral_layout_mod,only:me
 use GFS_typedefs, only: GFS_control_type, GFS_data_type
 implicit none
 type(GFS_control_type),   intent(in)    :: Model

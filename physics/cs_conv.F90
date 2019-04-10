@@ -59,7 +59,9 @@ module cs_conv_pre
 ! --- input/output
   real(r8), dimension(ntrac-ncld+2), intent(out) :: fswtr, fscav
   real(r8), dimension(im), intent(out) :: wcbmax
-  real(r8), dimension(im,levs), intent(out) :: save_q1,save_q2,save_q3
+  real(r8), dimension(im,levs), intent(out) :: save_q1,save_q2
+  ! save_q3 is not allocated for Zhao-Carr MP
+  real(r8), dimension(:,:), intent(out)     :: save_q3
 
   character(len=*), intent(out) :: errmsg
   integer,          intent(out) :: errflg
@@ -79,6 +81,9 @@ module cs_conv_pre
   fscav(:) = 0.0
   do k=1,levs
     do i=1,im
+      ! DH* note - save_q1 assignment may be redundant,
+      ! because already done in GFS_DCNV_generic_pre?
+      ! Keep for using cs_conv w/o GFS_DCNV_generic_pre?
       save_q1(i,k) = q(i,k)
       save_q2(i,k) = max(0.0,clw2(i,k))
       save_q3(i,k) = max(0.0,clw1(i,k))
